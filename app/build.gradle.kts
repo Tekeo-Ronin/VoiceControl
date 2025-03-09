@@ -43,10 +43,15 @@ android {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
     packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "**/libc++_shared.so"
         }
     }
+
 }
 
 dependencies {
@@ -72,13 +77,13 @@ dependencies {
     implementation(libs.media)
 
     implementation(libs.tarsos.dsp.core)
-    implementation(libs.tarsos.dsp.jvm)
 
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
     implementation(libs.compose.foundation)
     implementation(libs.compose.icons)
     implementation(libs.compose.animation)
+    implementation(libs.ffmpeg.kit.min)
 
     implementation("androidx.compose.material3:material3:1.3.1")
     implementation("androidx.compose.material3:material3-window-size-class:1.3.1")

@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Stop
 import kotlinx.coroutines.launch
-
 class MainActivity : ComponentActivity() {
 
     private lateinit var audioRecorder: AudioRecorder
@@ -35,6 +34,7 @@ class MainActivity : ComponentActivity() {
                 VoiceApp(audioRecorder)
             }
         }
+
     }
 }
 

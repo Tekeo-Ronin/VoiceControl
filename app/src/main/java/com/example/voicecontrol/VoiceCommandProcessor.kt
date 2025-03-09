@@ -10,7 +10,6 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import org.pytorch.IValue
 import org.pytorch.Module
@@ -42,17 +41,24 @@ class VoiceCommandProcessor(private val activity: ComponentActivity) {
     }
 
     fun processAudio(inputTensor: Tensor): String {
-        val outputTensor = model.forward(IValue.from(inputTensor)).toTensor()
-        val predictions = outputTensor.dataAsFloatArray
+        return try {
+            val outputTensor = model.forward(IValue.from(inputTensor)).toTensor()
+            val predictions = outputTensor.dataAsFloatArray
 
-        return interpretCommand(predictions)
+            println("Predictions: ${predictions.joinToString(", ")}")
+
+            interpretCommand(predictions)
+        } catch (e: Exception) {
+            Toast.makeText(activity, "Error processing audio: ${e.message}", Toast.LENGTH_SHORT).show()
+            "Unknown command"
+        }
     }
 
     private fun interpretCommand(predictions: FloatArray): String {
         val maxPredictionIndex = predictions.indexOfFirst { it == predictions.maxOrNull() }
 
         return when (maxPredictionIndex) {
-            0 -> "Okey Voiceapp"
+            0 -> "Okay VoiceApp"
             1 -> "Turn off Bluetooth"
             2 -> "Turn off flashlight"
             3 -> "Turn on Bluetooth"
@@ -81,14 +87,12 @@ class VoiceCommandProcessor(private val activity: ComponentActivity) {
                 val cameraManager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
                 val cameraId = cameraManager.cameraIdList[0]
                 cameraManager.setTorchMode(cameraId, turnOn)
-
                 Toast.makeText(activity, if (turnOn) "Flashlight turned on" else "Flashlight turned off", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Toast.makeText(activity, "Error accessing flashlight: ${e.message}", Toast.LENGTH_SHORT).show()
-                e.printStackTrace()
             }
         } else {
-            ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.CAMERA), 1)
+            activity.requestPermissions(arrayOf(Manifest.permission.CAMERA), 1)
         }
     }
 
@@ -107,7 +111,7 @@ class VoiceCommandProcessor(private val activity: ComponentActivity) {
                 }
             }
         } else {
-            ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 2)
+            activity.requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 2)
         }
     }
 
