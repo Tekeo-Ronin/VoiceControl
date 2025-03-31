@@ -1,4 +1,4 @@
-package com.example.voicecontrol.ui.theme
+package com.voice.control.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

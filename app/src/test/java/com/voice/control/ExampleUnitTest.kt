@@ -1,4 +1,4 @@
-package com.example.voicecontrol
+package com.voice.control
 
 import org.junit.Test
 

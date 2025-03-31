@@ -16,11 +16,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven("https://jitpack.io") // Додаємо JitPack
-        maven("https://mvn.0110.be/releases")  // Репозиторій TarsosDSP
     }
 }
 
 rootProject.name = "VoiceControl"
 include(":app")
- 

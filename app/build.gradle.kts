@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.voicecontrol"
+    namespace = "com.voice.control"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.voicecontrol"
+        applicationId = "com.voice.control"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -43,15 +43,10 @@ android {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
     packaging {
-        jniLibs {
-            useLegacyPackaging = true
-        }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "**/libc++_shared.so"
         }
     }
-
 }
 
 dependencies {
@@ -72,21 +67,12 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation(libs.pytorch)
-    implementation(libs.pytorch.torchvision)
-    implementation(libs.media)
+    implementation(files("libs/TarsosDSP-Android.jar"))
 
-    implementation(libs.tarsos.dsp.core)
+    implementation("org.pytorch:pytorch_android:1.13.1")
+    implementation("org.pytorch:pytorch_android_torchvision:1.13.1")
 
-    implementation(libs.compose.ui)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.icons)
-    implementation(libs.compose.animation)
-    implementation(libs.ffmpeg.kit.min)
-
-    implementation("androidx.compose.material3:material3:1.3.1")
-    implementation("androidx.compose.material3:material3-window-size-class:1.3.1")
-    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.4.0-alpha05")
-
+    implementation ("androidx.compose.material3:material3:1.0.0")
+    implementation ("androidx.compose.ui:ui:1.1.1")
+    implementation ("androidx.compose.material:material-icons-extended:1.1.1")
 }

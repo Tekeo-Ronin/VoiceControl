@@ -1,4 +1,4 @@
-package com.example.voicecontrol.ui.theme
+package com.voice.control.ui.theme
 
 import android.app.Activity
 import android.os.Build
