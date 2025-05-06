@@ -68,6 +68,10 @@ var/
 *.bak
 *.tmp
 
+# PyTorch model files (if you don’t want to track them)
+*.ptl
+*.pth
+
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
