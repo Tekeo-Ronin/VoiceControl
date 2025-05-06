@@ -1,15 +1,79 @@
+# =========================
+# ANDROID / ANDROID STUDIO
+# =========================
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+.gradle/
+.idea/
+local.properties
 .DS_Store
 /build
 /captures
 .externalNativeBuild
 .cxx
+*.apk
+*.ap_
+
+# Android Studio configurations
+.gradle/
+.idea/
 local.properties
+/.gradle
+/.idea
+**/build/
+**/.idea/
+**/.gradle/
+**/local.properties
+
+# Keystore files (if any)
+*.jks
+*.keystore
+
+# =========================
+# PYTHON BACKEND
+# =========================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+.venv/
+.env/
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs
+*.log
+
+# Misc
+*.sqlite3
+*.db
+*.bak
+*.tmp
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# =========================
+# SYSTEM / OS FILES
+# =========================
+.DS_Store
+Thumbs.db
+

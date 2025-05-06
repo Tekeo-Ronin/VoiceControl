@@ -1,14 +1,12 @@
 package com.voice.control
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Menu
@@ -18,17 +16,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.voice.control.ui.theme.VoiceControlTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.compose.ui.text.style.TextAlign
-import com.voice.control.AudioRecorder
-import androidx.activity.compose.LocalActivity
-import androidx.compose.ui.platform.LocalContext
-
-
+import androidx.compose.foundation.background
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 class MainActivity : ComponentActivity() {
     private lateinit var audioRecorder: AudioRecorder
@@ -36,21 +35,34 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        audioRecorder = AudioRecorder(this) { recognized ->
-            Toast.makeText(this, "Wynik: $recognized", Toast.LENGTH_SHORT).show()
-        }
+        requestAllPermissions()
 
-//        Thread {
-//            val processor = VoiceCommandProcessor(this)
-//            processor.testWithAssetFile("turn_on_browser_1.wav")
-//        }.start()
+        val voiceProcessor = VoiceCommandProcessor(this)
+        audioRecorder = AudioRecorder(this, voiceProcessor)
 
         enableEdgeToEdge()
-
         setContent {
             VoiceControlTheme {
                 VoiceAppScreen(audioRecorder)
             }
+        }
+    }
+
+    private fun requestAllPermissions() {
+        val permissions = mutableListOf(
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.CAMERA
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+        }
+
+        val notGranted = permissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (notGranted.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, notGranted.toTypedArray(), 0)
         }
     }
 }
@@ -63,28 +75,19 @@ fun VoiceAppScreen(audioRecorder: AudioRecorder) {
     var isRecording by remember { mutableStateOf(false) }
     var currentScreen by remember { mutableStateOf("Home") }
 
-//    val context = LocalContext.current
-//
-//    LaunchedEffect(Unit) {
-//        val processor = VoiceCommandProcessor(context)
-//        processor.executeCommand("turn_on_flashlight")
-//    }
-
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            DrawerMenuContent(
-                onMenuItemClicked = { menuItem ->
-                    currentScreen = menuItem
-                    scope.launch { drawerState.close() }
-                }
-            )
+            DrawerMenuContent { menuItem ->
+                currentScreen = menuItem
+                scope.launch { drawerState.close() }
+            }
         }
     ) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Voice Control App") },
+                    title = { Text("Aplikacja Sterowania Głosem") },
                     navigationIcon = {
                         IconButton(onClick = {
                             scope.launch { drawerState.open() }
@@ -105,9 +108,10 @@ fun VoiceAppScreen(audioRecorder: AudioRecorder) {
                     "Home" -> VoiceRecorderScreen(isRecording) {
                         isRecording = !isRecording
                         scope.launch(Dispatchers.IO) {
-                            audioRecorder?.toggleRecording()
+                            audioRecorder.toggleRecording()
                         }
                     }
+                    "Testowanie" -> TestowanieScreen()
                     "About App" -> AboutAppScreen()
                     "About Author" -> AboutAuthorScreen()
                 }
@@ -124,7 +128,7 @@ fun DrawerMenuContent(onMenuItemClicked: (String) -> Unit) {
             .padding(32.dp)
     ) {
         Spacer(modifier = Modifier.height(64.dp))
-        listOf("Home", "About App", "About Author").forEach { menuItem ->
+        listOf("Home", "Testowanie", "O Aplikacji", "O Autorze").forEach { menuItem ->
             Text(
                 text = menuItem,
                 modifier = Modifier
@@ -148,9 +152,10 @@ fun VoiceRecorderScreen(isRecording: Boolean, onMicClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = if (isRecording) "Recording..." else "Press to start recording",
+            text = if (isRecording) "Nagrywanie..." else "Naciśnij, aby rozpocząć nagrywanie",
             fontSize = 24.sp,
-            modifier = Modifier.padding(bottom = 32.dp)
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 32.dp).fillMaxWidth()
         )
 
         Box(
@@ -165,7 +170,7 @@ fun VoiceRecorderScreen(isRecording: Boolean, onMicClick: () -> Unit) {
         ) {
             Icon(
                 imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
-                contentDescription = "Record Button",
+                contentDescription = "Przycisk nagrywania",
                 tint = Color.White,
                 modifier = Modifier.size(48.dp)
             )
@@ -182,13 +187,10 @@ fun AboutAppScreen() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Voice Recognition App v1.0",
-            fontSize = 24.sp
-        )
+        Text("Aplikacja Rozpoznawania Głosu v1.0", fontSize = 24.sp)
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "This application allows recording and voice processing. Additional features are in development.",
+            "Ta aplikacja umożliwia nagrywanie i przetwarzanie głosu. Dodatkowe funkcje są w trakcie rozwoju.",
             fontSize = 18.sp,
             textAlign = TextAlign.Center
         )
@@ -204,19 +206,16 @@ fun AboutAuthorScreen() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Imię i nazwisko: Grzegorz Kołakowski",
-            fontSize = 20.sp
-        )
+        Text("Imię i nazwisko: Grzegorz Kołakowski", fontSize = 20.sp)
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Student Wojskowej Akademii Technicznej im. Jarosława Dąbrowskiego",
+            "Student Wojskowej Akademii Technicznej im. Jarosława Dąbrowskiego",
             fontSize = 18.sp,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Kierunek: Elektronika i Telekomunikacja\nSpecjalność: Systemy Cyfrowe",
+            "Kierunek: Elektronika i Telekomunikacja\nSpecjalność: Systemy Cyfrowe",
             fontSize = 18.sp,
             textAlign = TextAlign.Center
         )
