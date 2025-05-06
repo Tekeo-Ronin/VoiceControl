@@ -35,10 +35,10 @@ A mobile Android app and backend server for recognizing voice commands and execu
 1. Make sure you have installed:
    - Python 3.9+
    - pip
-2. Install required libraries:
+2. Install all required libraries from `requirements.txt`:
 ```
 
-pip install fastapi uvicorn torch librosa numpy
+pip install -r requirements.txt
 
 ```
 3. Place the model file `model.ptl` in the `model/` folder.
@@ -52,10 +52,10 @@ uvicorn main\:app --host 0.0.0.0 --port 8000
 6. In the app code (`AudioRecorder.kt`), set the correct local server address:
 ```
 
-val url = "[http://192.168.1.227:8000/predict/](http://192.168.1.227:8000/predict/)"
+val url = "[http://192.168.x.x:8000/predict/](http://192.168.x.x:8000/predict/)"
 
 ```
-Replace the IP with your computer’s IP address.
+Replace `192.168.x.x` with your computer’s local IP address.
 
 ---
 
@@ -69,6 +69,7 @@ Replace the IP with your computer’s IP address.
 ├── backend/
 │   ├── main.py (FastAPI server)
 │   ├── utils.py (helper functions)
+│   ├── requirements.txt (Python dependencies)
 │   └── model/
 │       └── model.ptl (PyTorch model)
 
@@ -81,5 +82,4 @@ Replace the IP with your computer’s IP address.
 - The app includes a test section (`Testowanie` in the menu) to test with sample audio files.
 - If the backend is not running, the app will show a “Server error” message.
 - If you want to train your own model, you need to save it as a `.ptl` TorchScript file.
-
----
+```
