@@ -6,7 +6,9 @@ import android.widget.Toast
 
 class VoiceCommandProcessor(private val context: Context) {
 
-    fun executeCommand(command: String) {
+    fun executeCommand(command: String, suppressWakeWord: Boolean = false) {
+        if (command == "okey_voiceapp" && suppressWakeWord) return
+
         Toast.makeText(context, "Rozpoznano komendę: $command", Toast.LENGTH_SHORT).show()
 
         when (command) {

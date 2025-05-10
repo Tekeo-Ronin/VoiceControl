@@ -84,7 +84,7 @@ fun VoiceAppScreen(audioRecorder: AudioRecorder) {
         drawerContent = {
             ModalDrawerSheet(
                 modifier = Modifier.fillMaxHeight(),
-                drawerContainerColor = Color.White
+                drawerContainerColor = MaterialTheme.colorScheme.surface
             ) {
                 Column(
                     modifier = Modifier

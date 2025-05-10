@@ -14,8 +14,6 @@ import java.nio.ByteOrder
 import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.max
-import com.voice.control.VoiceApiClient
-
 
 class AudioRecorder(
     private val activity: ComponentActivity,
@@ -150,7 +148,7 @@ class AudioRecorder(
             val result = VoiceApiClient.sendWavBytes(activity, bytes, "recorded_audio.wav")
 
             withContext(Dispatchers.Main) {
-                commandProcessor.executeCommand(result)
+                commandProcessor.executeCommand(result, suppressWakeWord = true)
             }
         }
     }
