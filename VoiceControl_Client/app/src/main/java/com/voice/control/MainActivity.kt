@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VoiceAppScreen(audioRecorder: AudioRecorder) {
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var isRecording by remember { mutableStateOf(false) }
     var currentScreen by remember { mutableStateOf("Home") }
@@ -83,11 +83,37 @@ fun VoiceAppScreen(audioRecorder: AudioRecorder) {
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
+                modifier = Modifier.fillMaxHeight(),
                 drawerContainerColor = Color.White
             ) {
-                DrawerMenuContent { menuItem ->
-                    currentScreen = menuItem
-                    scope.launch { drawerState.close() }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White)
+                        .padding(32.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(64.dp))
+                    listOf(
+                        "Home",
+                        "Wake Word",
+                        "Testowanie",
+                        "Testowanie Lokalne",
+                        "O Aplikacji",
+                        "O Autorze"
+                    ).forEach { menuItem ->
+                        Text(
+                            text = menuItem,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                                .clickable {
+                                    currentScreen = menuItem
+                                    scope.launch { drawerState.close() }
+                                },
+                            fontSize = 18.sp,
+                            color = Color.Black
+                        )
+                    }
                 }
             }
         }
@@ -109,7 +135,6 @@ fun VoiceAppScreen(audioRecorder: AudioRecorder) {
             Box(
                 modifier = Modifier
                     .padding(padding)
-//                    .padding(top = 32.dp)
                     .fillMaxSize()
             ) {
                 when (currentScreen) {
@@ -119,19 +144,22 @@ fun VoiceAppScreen(audioRecorder: AudioRecorder) {
                             audioRecorder.toggleRecording()
                         }
                     }
+
                     "Wake Word" -> WakeWordScreen()
                     "Testowanie" -> TestowanieScreen()
                     "Testowanie Lokalne" -> {
                         val context = LocalContext.current
                         TestLocalScreen(context = context)
                     }
-                    "About App" -> AboutAppScreen()
-                    "About Author" -> AboutAuthorScreen()
+
+                    "O Aplikacji" -> AboutAppScreen()
+                    "O Autorze" -> AboutAuthorScreen()
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun DrawerMenuContent(onMenuItemClicked: (String) -> Unit) {

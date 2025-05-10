@@ -20,6 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import android.provider.Settings
+import android.net.Uri
+
 
 
 @Composable
@@ -39,6 +42,14 @@ fun WakeWordScreen() {
 
         Button(
             onClick = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
+                    val intent = Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:${context.packageName}")
+                    )
+                    context.startActivity(intent)
+                    return@Button
+                }
                 val intent = Intent(context, WakeWordService::class.java)
                 if (!isRunning) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -3,28 +3,24 @@ package com.voice.control
 import android.Manifest
 import android.content.pm.PackageManager
 import android.media.*
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
 import java.io.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.max
+import com.voice.control.VoiceApiClient
+
 
 class AudioRecorder(
     private val activity: ComponentActivity,
     private val commandProcessor: VoiceCommandProcessor
 ) {
-    private val TAG = "AudioRecorder"
     private var isRecording = false
     private var audioRecord: AudioRecord? = null
     private val sampleRate = 16000
@@ -151,34 +147,10 @@ class AudioRecorder(
 
     private fun sendBytesToBackend(bytes: ByteArray) {
         CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val url = "http://192.168.1.75:8000/predict/"
-                val client = OkHttpClient()
-                val mediaType = "audio/wav".toMediaTypeOrNull()
-                val requestBody = bytes.toRequestBody(mediaType)
-                val multipartBody = MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart("file", "recorded_audio.wav", requestBody)
-                    .build()
+            val result = VoiceApiClient.sendWavBytes(activity, bytes, "recorded_audio.wav")
 
-                val request = Request.Builder().url(url).post(multipartBody).build()
-
-                client.newCall(request).execute().use { response ->
-                    val responseBody = response.body?.string()
-                    val json = JSONObject(responseBody ?: "")
-                    val command = json.optString("command", "nieznane")
-
-                    Log.i(TAG, "Otrzymano komendę: $command")
-
-                    withContext(Dispatchers.Main) {
-                        commandProcessor.executeCommand(command)
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Błąd podczas zapytania do backendu", e)
-                withContext(Dispatchers.Main) {
-                    showToast("Błąd serwera: ${e.message}")
-                }
+            withContext(Dispatchers.Main) {
+                commandProcessor.executeCommand(result)
             }
         }
     }

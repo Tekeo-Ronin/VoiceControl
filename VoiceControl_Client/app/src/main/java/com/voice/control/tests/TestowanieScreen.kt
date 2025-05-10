@@ -19,6 +19,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import okhttp3.RequestBody.Companion.toRequestBody
 import android.util.Log
+import com.voice.control.VoiceApiClient
+
 
 
 
@@ -98,44 +100,12 @@ fun TestowanieScreen() {
 suspend fun sendFileToBackend(context: Context, fileName: String): String {
     return withContext(Dispatchers.IO) {
         try {
-            val TAG = "VoiceControl"
-            val url = "http://192.168.1.75:8000/predict/"
             val assetManager = context.assets
-
-            Log.d(TAG, "Opening asset file: $fileName")
             val inputStream = assetManager.open(fileName)
             val bytes = inputStream.readBytes()
-            Log.d(TAG, "Read ${bytes.size} bytes from $fileName")
-
-            val mediaType = "audio/wav".toMediaTypeOrNull()
-            val requestBody = bytes.toRequestBody(mediaType)
-
-            Log.d(TAG, "Building multipart request")
-            val multipartBody = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("file", fileName.substringAfterLast('/'), requestBody)
-                .build()
-
-            val client = OkHttpClient()
-            val request = Request.Builder()
-                .url(url)
-                .post(multipartBody)
-                .build()
-
-            Log.d(TAG, "Sending request to $url")
-            client.newCall(request).execute().use { response ->
-                val responseBody = response.body?.string()
-                Log.d(TAG, "Received response code: ${response.code}")
-                Log.d(TAG, "Response body: $responseBody")
-
-                if (!response.isSuccessful) return@withContext "Błąd: ${response.code}"
-                val json = JSONObject(responseBody ?: "")
-                val command = json.optString("command", "Brak komendy")
-                Log.d(TAG, "Parsed command from response: $command")
-                return@withContext command
-            }
+            VoiceApiClient.sendWavBytes(context, bytes, filename = fileName.substringAfterLast('/'))
         } catch (e: Exception) {
-            Log.e("VoiceControl", "Error during request: ${e.message}", e)
+            Log.e("VoiceControl", "Error: ${e.message}", e)
             return@withContext "Błąd: ${e.message}"
         }
     }

@@ -12,15 +12,12 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.voice.control.MainActivity
 import kotlinx.coroutines.*
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.abs
 import kotlin.math.max
+import com.voice.control.VoiceApiClient
 
 class WakeWordService : Service() {
 
@@ -99,7 +96,7 @@ class WakeWordService : Service() {
                         val normalized = normalizeAudio(trimmed)
                         val wav = pcmToWav(normalized, sampleRate, 1)
 
-                        val result = sendToBackend(wav)
+                        val result = VoiceApiClient.sendWavBytes(this@WakeWordService, wav, "wake_word.wav")
                         if (result == "okey_voiceapp") {
                             Log.i("WakeWordService", "Wake word detected!")
                             showWakeNotification()
@@ -111,28 +108,6 @@ class WakeWordService : Service() {
         }
     }
 
-    private fun sendToBackend(bytes: ByteArray): String {
-        return try {
-            val url = "http://192.168.1.75:8000/predict/"
-            val client = OkHttpClient()
-            val mediaType = "audio/wav".toMediaTypeOrNull()
-            val requestBody = bytes.toRequestBody(mediaType)
-            val multipartBody = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("file", "wake_word.wav", requestBody)
-                .build()
-
-            val request = Request.Builder().url(url).post(multipartBody).build()
-            val response = client.newCall(request).execute()
-
-            val body = response.body?.string()
-            val json = JSONObject(body ?: "")
-            json.optString("command", "unknown")
-        } catch (e: Exception) {
-            Log.e("WakeWordService", "Błąd serwera: ${e.message}")
-            "unknown"
-        }
-    }
 
     private fun trimSilence(data: ByteArray, threshold: Short = 1000): ByteArray {
         val samples = ShortArray(data.size / 2)
@@ -189,29 +164,16 @@ class WakeWordService : Service() {
     }
 
     private fun showWakeNotification() {
-        val intent = Intent(this, MainActivity::class.java).apply {
+        val intent = Intent(applicationContext, MainActivity::class.java).apply {
+            action = Intent.ACTION_MAIN
+            addCategory(Intent.CATEGORY_LAUNCHER)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        val builder = NotificationCompat.Builder(this, "wake_word_service")
-            .setContentTitle("Aktywowany Wake Word!")
-            .setContentText("Kliknij, aby powrócić do aplikacji")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_CALL)
-            .setFullScreenIntent(pendingIntent, true)
-            .setAutoCancel(true)
-
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(42, builder.build())
+        startActivity(intent)
     }
+
+
 
     override fun onDestroy() {
         isRunning = false
