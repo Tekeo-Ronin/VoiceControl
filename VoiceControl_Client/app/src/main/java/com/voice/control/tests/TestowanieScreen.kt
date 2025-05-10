@@ -1,4 +1,4 @@
-package com.voice.control
+package com.voice.control.tests
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -99,7 +99,7 @@ suspend fun sendFileToBackend(context: Context, fileName: String): String {
     return withContext(Dispatchers.IO) {
         try {
             val TAG = "VoiceControl"
-            val url = "http://192.168.1.227:8000/predict/"
+            val url = "http://192.168.1.75:8000/predict/"
             val assetManager = context.assets
 
             Log.d(TAG, "Opening asset file: $fileName")

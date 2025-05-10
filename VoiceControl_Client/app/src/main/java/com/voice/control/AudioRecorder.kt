@@ -152,7 +152,7 @@ class AudioRecorder(
     private fun sendBytesToBackend(bytes: ByteArray) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = "http://192.168.1.227:8000/predict/"
+                val url = "http://192.168.1.75:8000/predict/"
                 val client = OkHttpClient()
                 val mediaType = "audio/wav".toMediaTypeOrNull()
                 val requestBody = bytes.toRequestBody(mediaType)

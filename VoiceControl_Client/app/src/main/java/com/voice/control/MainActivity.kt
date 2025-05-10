@@ -26,8 +26,12 @@ import androidx.compose.foundation.background
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.voice.control.tests.TestLocalScreen
+import com.voice.control.tests.TestowanieScreen
+import com.voice.control.wake_word.WakeWordScreen
 
 class MainActivity : ComponentActivity() {
     private lateinit var audioRecorder: AudioRecorder
@@ -78,9 +82,13 @@ fun VoiceAppScreen(audioRecorder: AudioRecorder) {
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            DrawerMenuContent { menuItem ->
-                currentScreen = menuItem
-                scope.launch { drawerState.close() }
+            ModalDrawerSheet(
+                drawerContainerColor = Color.White
+            ) {
+                DrawerMenuContent { menuItem ->
+                    currentScreen = menuItem
+                    scope.launch { drawerState.close() }
+                }
             }
         }
     ) {
@@ -101,7 +109,7 @@ fun VoiceAppScreen(audioRecorder: AudioRecorder) {
             Box(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(top = 32.dp)
+//                    .padding(top = 32.dp)
                     .fillMaxSize()
             ) {
                 when (currentScreen) {
@@ -111,7 +119,12 @@ fun VoiceAppScreen(audioRecorder: AudioRecorder) {
                             audioRecorder.toggleRecording()
                         }
                     }
+                    "Wake Word" -> WakeWordScreen()
                     "Testowanie" -> TestowanieScreen()
+                    "Testowanie Lokalne" -> {
+                        val context = LocalContext.current
+                        TestLocalScreen(context = context)
+                    }
                     "About App" -> AboutAppScreen()
                     "About Author" -> AboutAuthorScreen()
                 }
@@ -128,7 +141,7 @@ fun DrawerMenuContent(onMenuItemClicked: (String) -> Unit) {
             .padding(32.dp)
     ) {
         Spacer(modifier = Modifier.height(64.dp))
-        listOf("Home", "Testowanie", "O Aplikacji", "O Autorze").forEach { menuItem ->
+        listOf("Home", "Wake Word", "Testowanie", "Testowanie Lokalne","O Aplikacji", "O Autorze").forEach { menuItem ->
             Text(
                 text = menuItem,
                 modifier = Modifier
